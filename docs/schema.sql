@@ -121,30 +121,37 @@ CREATE TABLE IF NOT EXISTS wisbe_equipamiento (
     proximo_mantenimiento DATE
 );
 
--- Inserts iniciales de prueba para poblar el sistema y que no esté vacío al principio
-INSERT INTO wisbe_planes (nombre, costo, duracion_dias, descripcion) VALUES
-('Mensual Básico', 450.00, 30, 'Acceso completo al área de pesas y cardio.'),
-('Anual VIP', 4500.00, 365, 'Acceso ilimitado, todas las clases y casillero incluido.');
+-- Inserts iniciales de prueba con ON CONFLICT (id) DO NOTHING para re-ejecución segura
+INSERT INTO wisbe_planes (id, nombre, costo, duracion_dias, descripcion) VALUES
+(1, 'Mensual Básico', 450.00, 30, 'Acceso completo al área de pesas y cardio.'),
+(2, 'Anual VIP', 4500.00, 365, 'Acceso ilimitado, todas las clases y casillero incluido.')
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO wisbe_clientes (nombre, email, telefono, estado) VALUES
-('Juan Pérez', 'juan.perez@example.com', '555-0192', 'Activo'),
-('María López', 'maria.lopez@example.com', '555-0143', 'Activo');
+INSERT INTO wisbe_clientes (id, nombre, email, telefono, estado) VALUES
+(1, 'Juan Pérez', 'juan.perez@example.com', '555-0192', 'Activo'),
+(2, 'María López', 'maria.lopez@example.com', '555-0143', 'Activo')
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO wisbe_entrenadores (nombre, especialidad, telefono, email) VALUES
-('Carlos Gómez', 'Crossfit & Funcional', '555-9876', 'carlos.gomez@wisbe.com'),
-('Ana Rodríguez', 'Yoga & Pilates', '555-5432', 'ana.rodriguez@wisbe.com');
+INSERT INTO wisbe_entrenadores (id, nombre, especialidad, telefono, email) VALUES
+(1, 'Carlos Gómez', 'Crossfit & Funcional', '555-9876', 'carlos.gomez@wisbe.com'),
+(2, 'Ana Rodríguez', 'Yoga & Pilates', '555-5432', 'ana.rodriguez@wisbe.com')
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO wisbe_clases (nombre, entrenador_id, horario, capacidad_maxima) VALUES
-('Crossfit Intensivo', 1, 'Lunes a Viernes 07:00 AM', 15),
-('Yoga Restaurativo', 2, 'Martes y Jueves 06:00 PM', 20);
+INSERT INTO wisbe_clases (id, nombre, entrenador_id, horario, capacidad_maxima) VALUES
+(1, 'Crossfit Intensivo', 1, 'Lunes a Viernes 07:00 AM', 15),
+(2, 'Yoga Restaurativo', 2, 'Martes y Jueves 06:00 PM', 20)
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO wisbe_productos (nombre, precio, stock, codigo_barras) VALUES
-('Proteína de Suero 1kg', 850.00, 10, '7501234567890'),
-('Bebida Electrolitos', 35.00, 50, '7509876543210');
+INSERT INTO wisbe_productos (id, nombre, precio, stock, codigo_barras) VALUES
+(1, 'Proteína de Suero 1kg', 850.00, 10, '7501234567890'),
+(2, 'Bebida Electrolitos', 35.00, 50, '7509876543210')
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO wisbe_empleados (nombre, puesto, telefono, salario) VALUES
-('Administrador Wisbe', 'Administrador General', '555-0000', 15000.00);
+INSERT INTO wisbe_empleados (id, nombre, puesto, telefono, salario) VALUES
+(1, 'Administrador Wisbe', 'Administrador General', '555-0000', 15000.00)
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO wisbe_equipamiento (nombre, estado, fecha_adquisicion, proximo_mantenimiento) VALUES
-('Caminadora Proform 500', 'Excelente', '2023-01-15', '2024-06-15'),
-('Kit de Mancuernas 2kg - 20kg', 'Bueno', '2023-02-10', '2024-08-10');
+INSERT INTO wisbe_equipamiento (id, nombre, estado, fecha_adquisicion, proximo_mantenimiento) VALUES
+(1, 'Caminadora Proform 500', 'Excelente', '2023-01-15', '2024-06-15'),
+(2, 'Kit de Mancuernas 2kg - 20kg', 'Bueno', '2023-02-10', '2024-08-10')
+ON CONFLICT (id) DO NOTHING;
