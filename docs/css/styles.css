@@ -1,0 +1,154 @@
+/* Minimalist Pastel Blue Gym Platform Stylesheet */
+
+:root {
+  --bg-color: #f0f4f8; /* Soft pastel blue background */
+  --card-bg: #ffffff; /* White background for clean look */
+  --text-main: #1e293b; /* High-contrast dark slate for main text */
+  --text-muted: #64748b; /* Soft gray-blue for secondary elements */
+  --primary: #3b82f6; /* Modern crisp blue for accents */
+  --accent-pastel: #dbeafe; /* Light pastel blue for hover/highlights */
+  --border-color: #e2e8f0; /* Subtle border color */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  line-height: 1.5;
+}
+
+/* Base layout container */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Grid layout for the main blocks */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Single tile/block */
+.tile {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-decoration: none;
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Typography on tiles */
+.tile h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Hover & Focus states */
+.tile:hover {
+  transform: translateY(-4px);
+  background-color: var(--accent-pastel);
+  border-color: var(--primary);
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -2px rgba(59, 130, 246, 0.05);
+}
+
+.tile:active {
+  transform: translateY(-1px);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
+/* Subpages layout (for specific html files) */
+.subpage-container {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.subpage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--accent-pastel);
+  padding-bottom: 1rem;
+}
+
+.subpage-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+/* High-contrast simple back link */
+.btn-back {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--primary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background-color: var(--accent-pastel);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.btn-back:hover {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Simple placeholder content area inside subpages */
+.placeholder-content {
+  color: var(--text-muted);
+  font-size: 1rem;
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+  padding: 1.5rem;
+}
