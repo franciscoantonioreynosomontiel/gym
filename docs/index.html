@@ -3,15 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ADMINISTRACIÓN</title>
+  <title>PORTAL WISBE</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <header class="portal-header">
+    <div class="brand-header">
+      <img src="logo.png" alt="Wisbe Logo" class="brand-logo-small">
+    </div>
+    <a href="login.html" id="admin-btn" class="btn-back">ADMINISTRACIÓN</a>
+  </header>
+
   <main class="container">
     <div class="grid">
-      <a href="dashboard.html" class="tile" tabindex="0">
-        <h2>DASHBOARD</h2>
-      </a>
       <a href="clientes.html" class="tile" tabindex="0">
         <h2>CLIENTES</h2>
       </a>
@@ -53,6 +57,17 @@
       </a>
     </div>
   </main>
-  <script src="js/main.js"></script>
+
+  <script>
+    // If admin is already logged in, change the link to directly go to admin.html
+    document.addEventListener("DOMContentLoaded", () => {
+      const isAdmin = localStorage.getItem("wisbe_admin_logged_in") === "true";
+      if (isAdmin) {
+        const btn = document.getElementById("admin-btn");
+        btn.textContent = "PANEL DE CONTROL";
+        btn.href = "admin.html";
+      }
+    });
+  </script>
 </body>
 </html>

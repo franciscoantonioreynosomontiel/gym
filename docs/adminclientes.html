@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADMINISTRAR CLIENTES - WISBE</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-db.js"></script>
+</head>
+<body>
+  <main class="subpage-container">
+    <header class="subpage-header">
+      <h1 class="subpage-title">
+        CLIENTES <span class="subpage-title-badge">ADMIN</span>
+      </h1>
+      <div>
+        <a href="admin.html" class="btn-back">VOLVER AL PANEL</a>
+      </div>
+    </header>
+
+    <div class="actions-bar">
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre o email...">
+      <button id="add-btn" class="btn-add">NUEVO CLIENTE</button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Fecha Registro</th>
+            <th>Estado</th>
+            <th style="width: 150px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="data-table-body">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div id="crud-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-title" class="modal-header">Nuevo Cliente</h2>
+      <form id="crud-form">
+        <input type="hidden" id="row-id">
+        <div class="form-group">
+          <label for="form-nombre">Nombre Completo</label>
+          <input type="text" id="form-nombre" required placeholder="Juan Pérez">
+        </div>
+        <div class="form-group">
+          <label for="form-email">Correo Electrónico</label>
+          <input type="email" id="form-email" required placeholder="juan.perez@example.com">
+        </div>
+        <div class="form-group">
+          <label for="form-telefono">Teléfono</label>
+          <input type="text" id="form-telefono" placeholder="555-0192">
+        </div>
+        <div class="form-group">
+          <label for="form-fecha">Fecha Registro</label>
+          <input type="date" id="form-fecha" required>
+        </div>
+        <div class="form-group">
+          <label for="form-estado">Estado</label>
+          <select id="form-estado">
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="close-modal-btn" class="btn-cancel">Cancelar</button>
+          <button type="submit" class="btn-submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allData = [];
+
+    async function loadData() {
+      allData = await DB.get('clientes');
+      renderTable(allData);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('data-table-body');
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros encontrados.</td></tr>';
+        return;
+      }
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${row.nombre}</td>
+          <td>${row.email || ''}</td>
+          <td>${row.telefono || ''}</td>
+          <td>${row.fecha_registro}</td>
+          <td><span class="subpage-title-badge">${row.estado}</span></td>
+          <td>
+            <button class="btn-edit" onclick="openEditModal(${row.id})">Editar</button>
+            <button class="btn-delete" onclick="deleteRow(${row.id})">Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Search logic
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allData.filter(row =>
+        row.nombre.toLowerCase().includes(query) ||
+        (row.email && row.email.toLowerCase().includes(query))
+      );
+      renderTable(filtered);
+    });
+
+    // Modal Control
+    const modal = document.getElementById('crud-modal');
+    const crudForm = document.getElementById('crud-form');
+
+    document.getElementById('add-btn').addEventListener('click', () => {
+      document.getElementById('modal-title').textContent = 'Nuevo Cliente';
+      document.getElementById('row-id').value = '';
+      crudForm.reset();
+      document.getElementById('form-fecha').value = new Date().toISOString().split('T')[0];
+      modal.classList.add('active');
+    });
+
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+
+    function openEditModal(id) {
+      const row = allData.find(r => r.id === id);
+      if (!row) return;
+      document.getElementById('modal-title').textContent = 'Editar Cliente';
+      document.getElementById('row-id').value = row.id;
+      document.getElementById('form-nombre').value = row.nombre;
+      document.getElementById('form-email').value = row.email || '';
+      document.getElementById('form-telefono').value = row.telefono || '';
+      document.getElementById('form-fecha').value = row.fecha_registro;
+      document.getElementById('form-estado').value = row.estado;
+      modal.classList.add('active');
+    }
+
+    crudForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('row-id').value;
+      const rowData = {
+        nombre: document.getElementById('form-nombre').value,
+        email: document.getElementById('form-email').value,
+        telefono: document.getElementById('form-telefono').value,
+        fecha_registro: document.getElementById('form-fecha').value,
+        estado: document.getElementById('form-estado').value
+      };
+
+      if (id) {
+        await DB.update('clientes', id, rowData);
+      } else {
+        await DB.insert('clientes', rowData);
+      }
+      modal.classList.remove('active');
+      loadData();
+    });
+
+    async function deleteRow(id) {
+      if (confirm('¿Está seguro de que desea eliminar este cliente?')) {
+        await DB.delete('clientes', id);
+        loadData();
+      }
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>
