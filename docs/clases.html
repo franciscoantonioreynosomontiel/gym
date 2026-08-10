@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CLASES</title>
+  <title>CLASES - WISBE</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-db.js"></script>
 </head>
 <body>
   <main class="subpage-container">
@@ -12,10 +14,65 @@
       <h1 class="subpage-title">CLASES</h1>
       <a href="index.html" class="btn-back">VOLVER</a>
     </header>
-    <div class="placeholder-content">
-      Sección de Clases. Listo para conectar con la base de datos de Supabase.
+
+    <div class="actions-bar">
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar clase por nombre...">
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Entrenador ID</th>
+            <th>Horario</th>
+            <th>Capacidad Máxima</th>
+          </tr>
+        </thead>
+        <tbody id="data-table-body">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
     </div>
   </main>
-  <script src="js/main.js"></script>
+
+  <script>
+    let allData = [];
+    async function loadData() {
+      allData = await DB.get('clases');
+      renderTable(allData);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('data-table-body');
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay registros encontrados.</td></tr>';
+        return;
+      }
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${row.nombre}</td>
+          <td>Entrenador #${row.entrenador_id}</td>
+          <td>${row.horario}</td>
+          <td>${row.capacidad_maxima} personas</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allData.filter(row =>
+        row.nombre.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    });
+
+    window.onload = loadData;
+  </script>
 </body>
 </html>

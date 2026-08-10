@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADMINISTRAR CLASES - WISBE</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-db.js"></script>
+</head>
+<body>
+  <main class="subpage-container">
+    <header class="subpage-header">
+      <h1 class="subpage-title">
+        CLASES <span class="subpage-title-badge">ADMIN</span>
+      </h1>
+      <div>
+        <a href="admin.html" class="btn-back">VOLVER AL PANEL</a>
+      </div>
+    </header>
+
+    <div class="actions-bar">
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre de clase...">
+      <button id="add-btn" class="btn-add">NUEVA CLASE</button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Entrenador ID</th>
+            <th>Horario</th>
+            <th>Capacidad Máxima</th>
+            <th style="width: 150px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="data-table-body">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div id="crud-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-title" class="modal-header">Nueva Clase</h2>
+      <form id="crud-form">
+        <input type="hidden" id="row-id">
+        <div class="form-group">
+          <label for="form-nombre">Nombre de Clase</label>
+          <input type="text" id="form-nombre" required placeholder="Crossfit Intensivo">
+        </div>
+        <div class="form-group">
+          <label for="form-entrenador">Entrenador ID</label>
+          <input type="number" id="form-entrenador" required placeholder="1">
+        </div>
+        <div class="form-group">
+          <label for="form-horario">Horario</label>
+          <input type="text" id="form-horario" required placeholder="Lunes a Viernes 07:00 AM">
+        </div>
+        <div class="form-group">
+          <label for="form-capacidad">Capacidad Máxima</label>
+          <input type="number" id="form-capacidad" required placeholder="20" value="20">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="close-modal-btn" class="btn-cancel">Cancelar</button>
+          <button type="submit" class="btn-submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allData = [];
+    async function loadData() {
+      allData = await DB.get('clases');
+      renderTable(allData);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('data-table-body');
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay registros encontrados.</td></tr>';
+        return;
+      }
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${row.nombre}</td>
+          <td>Entrenador #${row.entrenador_id}</td>
+          <td>${row.horario}</td>
+          <td>${row.capacidad_maxima} personas</td>
+          <td>
+            <button class="btn-edit" onclick="openEditModal(${row.id})">Editar</button>
+            <button class="btn-delete" onclick="deleteRow(${row.id})">Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allData.filter(row =>
+        row.nombre.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    });
+
+    const modal = document.getElementById('crud-modal');
+    const crudForm = document.getElementById('crud-form');
+
+    document.getElementById('add-btn').addEventListener('click', () => {
+      document.getElementById('modal-title').textContent = 'Nueva Clase';
+      document.getElementById('row-id').value = '';
+      crudForm.reset();
+      document.getElementById('form-capacidad').value = '20';
+      modal.classList.add('active');
+    });
+
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+
+    function openEditModal(id) {
+      const row = allData.find(r => r.id === id);
+      if (!row) return;
+      document.getElementById('modal-title').textContent = 'Editar Clase';
+      document.getElementById('row-id').value = row.id;
+      document.getElementById('form-nombre').value = row.nombre;
+      document.getElementById('form-entrenador').value = row.entrenador_id;
+      document.getElementById('form-horario').value = row.horario;
+      document.getElementById('form-capacidad').value = row.capacidad_maxima;
+      modal.classList.add('active');
+    }
+
+    crudForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('row-id').value;
+      const rowData = {
+        nombre: document.getElementById('form-nombre').value,
+        entrenador_id: parseInt(document.getElementById('form-entrenador').value),
+        horario: document.getElementById('form-horario').value,
+        capacidad_maxima: parseInt(document.getElementById('form-capacidad').value)
+      };
+
+      if (id) {
+        await DB.update('clases', id, rowData);
+      } else {
+        await DB.insert('clases', rowData);
+      }
+      modal.classList.remove('active');
+      loadData();
+    });
+
+    async function deleteRow(id) {
+      if (confirm('¿Está seguro de que desea eliminar esta clase?')) {
+        await DB.delete('clases', id);
+        loadData();
+      }
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>

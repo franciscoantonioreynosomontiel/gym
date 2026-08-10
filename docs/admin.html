@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADMINISTRACIÓN - WISBE</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/supabase-db.js"></script>
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand-header">
+      <img src="logo.png" alt="Wisbe Logo" class="brand-logo-small">
+    </div>
+    <button id="logout-btn" class="btn-logout">SALIR</button>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <a href="adminclientes.html" class="tile" tabindex="0">
+        <h2>CLIENTES</h2>
+      </a>
+      <a href="adminmembresias.html" class="tile" tabindex="0">
+        <h2>MEMBRESÍAS</h2>
+      </a>
+      <a href="adminpagos.html" class="tile" tabindex="0">
+        <h2>PAGOS</h2>
+      </a>
+      <a href="adminaccesos.html" class="tile" tabindex="0">
+        <h2>ACCESOS</h2>
+      </a>
+      <a href="adminplanes.html" class="tile" tabindex="0">
+        <h2>PLANES</h2>
+      </a>
+      <a href="adminentrenadores.html" class="tile" tabindex="0">
+        <h2>ENTRENADORES</h2>
+      </a>
+      <a href="adminclases.html" class="tile" tabindex="0">
+        <h2>CLASES</h2>
+      </a>
+      <a href="adminreservaciones.html" class="tile" tabindex="0">
+        <h2>RESERVACIONES</h2>
+      </a>
+      <a href="adminproductos.html" class="tile" tabindex="0">
+        <h2>PRODUCTOS</h2>
+      </a>
+      <a href="admininventario.html" class="tile" tabindex="0">
+        <h2>INVENTARIO</h2>
+      </a>
+      <a href="admingastos.html" class="tile" tabindex="0">
+        <h2>GASTOS</h2>
+      </a>
+      <a href="adminempleados.html" class="tile" tabindex="0">
+        <h2>EMPLEADOS</h2>
+      </a>
+      <a href="adminequipamiento.html" class="tile" tabindex="0">
+        <h2>EQUIPAMIENTO</h2>
+      </a>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('wisbe_admin_logged_in');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

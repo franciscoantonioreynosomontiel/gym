@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADMINISTRAR PAGOS - WISBE</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-db.js"></script>
+</head>
+<body>
+  <main class="subpage-container">
+    <header class="subpage-header">
+      <h1 class="subpage-title">
+        PAGOS <span class="subpage-title-badge">ADMIN</span>
+      </h1>
+      <div>
+        <a href="admin.html" class="btn-back">VOLVER AL PANEL</a>
+      </div>
+    </header>
+
+    <div class="actions-bar">
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar por concepto o método...">
+      <button id="add-btn" class="btn-add">NUEVO PAGO</button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente ID</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Método</th>
+            <th>Concepto</th>
+            <th style="width: 150px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="data-table-body">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div id="crud-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-title" class="modal-header">Nuevo Pago</h2>
+      <form id="crud-form">
+        <input type="hidden" id="row-id">
+        <div class="form-group">
+          <label for="form-cliente">Cliente ID</label>
+          <input type="number" id="form-cliente" required placeholder="1">
+        </div>
+        <div class="form-group">
+          <label for="form-monto">Monto ($)</label>
+          <input type="number" step="0.01" id="form-monto" required placeholder="450.00">
+        </div>
+        <div class="form-group">
+          <label for="form-fecha">Fecha Pago</label>
+          <input type="date" id="form-fecha" required>
+        </div>
+        <div class="form-group">
+          <label for="form-metodo">Método Pago</label>
+          <select id="form-metodo">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="form-concepto">Concepto</label>
+          <input type="text" id="form-concepto" required placeholder="Mensualidad Mayo">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="close-modal-btn" class="btn-cancel">Cancelar</button>
+          <button type="submit" class="btn-submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allData = [];
+    async function loadData() {
+      allData = await DB.get('pagos');
+      renderTable(allData);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('data-table-body');
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros encontrados.</td></tr>';
+        return;
+      }
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>Cliente #${row.cliente_id}</td>
+          <td>$${row.monto}</td>
+          <td>${row.fecha_pago}</td>
+          <td>${row.metodo_pago}</td>
+          <td>${row.concepto}</td>
+          <td>
+            <button class="btn-edit" onclick="openEditModal(${row.id})">Editar</button>
+            <button class="btn-delete" onclick="deleteRow(${row.id})">Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allData.filter(row =>
+        row.concepto.toLowerCase().includes(query) ||
+        row.metodo_pago.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    });
+
+    const modal = document.getElementById('crud-modal');
+    const crudForm = document.getElementById('crud-form');
+
+    document.getElementById('add-btn').addEventListener('click', () => {
+      document.getElementById('modal-title').textContent = 'Nuevo Pago';
+      document.getElementById('row-id').value = '';
+      crudForm.reset();
+      document.getElementById('form-fecha').value = new Date().toISOString().split('T')[0];
+      modal.classList.add('active');
+    });
+
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+
+    function openEditModal(id) {
+      const row = allData.find(r => r.id === id);
+      if (!row) return;
+      document.getElementById('modal-title').textContent = 'Editar Pago';
+      document.getElementById('row-id').value = row.id;
+      document.getElementById('form-cliente').value = row.cliente_id;
+      document.getElementById('form-monto').value = row.monto;
+      document.getElementById('form-fecha').value = row.fecha_pago.split(' ')[0];
+      document.getElementById('form-metodo').value = row.metodo_pago;
+      document.getElementById('form-concepto').value = row.concepto;
+      modal.classList.add('active');
+    }
+
+    crudForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('row-id').value;
+      const rowData = {
+        cliente_id: parseInt(document.getElementById('form-cliente').value),
+        monto: parseFloat(document.getElementById('form-monto').value),
+        fecha_pago: document.getElementById('form-fecha').value,
+        metodo_pago: document.getElementById('form-metodo').value,
+        concepto: document.getElementById('form-concepto').value
+      };
+
+      if (id) {
+        await DB.update('pagos', id, rowData);
+      } else {
+        await DB.insert('pagos', rowData);
+      }
+      modal.classList.remove('active');
+      loadData();
+    });
+
+    async function deleteRow(id) {
+      if (confirm('¿Está seguro de que desea eliminar este pago?')) {
+        await DB.delete('pagos', id);
+        loadData();
+      }
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>
