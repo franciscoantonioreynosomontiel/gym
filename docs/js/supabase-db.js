@@ -85,8 +85,8 @@ seedLocalStorage();
 // Security / Admin authentication check
 function checkAdminAccess() {
   const isAdmin = localStorage.getItem("wisbe_admin_logged_in") === "true";
-  const currentPage = window.location.pathname;
-  if (!isAdmin && currentPage.includes("admin")) {
+  const filename = window.location.pathname.split("/").pop();
+  if (!isAdmin && filename.startsWith("admin")) {
     window.location.href = "login.html";
   }
 }
@@ -98,8 +98,8 @@ const DB = {
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient.from(supabaseTable).select('*');
-        if (!error && data) return data;
-        console.warn(`Supabase get error on ${supabaseTable}, using local storage fallback:`, error);
+        if (!error && data && data.length > 0) return data;
+        console.warn(`Supabase get error or empty on ${supabaseTable}, using local storage:`, error);
       } catch (err) {
         console.warn(`Supabase connection failed for get ${supabaseTable}:`, err);
       }
@@ -110,20 +110,24 @@ const DB = {
 
   async insert(tableName, rowData) {
     const supabaseTable = `wisbe_${tableName}`;
+    let insertedRow = null;
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient.from(supabaseTable).insert([rowData]).select();
-        if (!error && data) return data[0];
-        console.warn(`Supabase insert error on ${supabaseTable}, using local storage fallback:`, error);
+        if (!error && data && data.length > 0) {
+          insertedRow = data[0];
+        } else {
+          console.warn(`Supabase insert error on ${supabaseTable}:`, error);
+        }
       } catch (err) {
         console.warn(`Supabase connection failed for insert ${supabaseTable}:`, err);
       }
     }
 
-    // LocalStorage Fallback
+    // Always sync with LocalStorage
     const localData = JSON.parse(localStorage.getItem(`wisbe_local_${tableName}`) || "[]");
     const newId = localData.length > 0 ? Math.max(...localData.map(r => r.id || 0)) + 1 : 1;
-    const newRow = { id: newId, ...rowData };
+    const newRow = insertedRow || { id: newId, ...rowData };
     localData.push(newRow);
     localStorage.setItem(`wisbe_local_${tableName}`, JSON.stringify(localData));
     return newRow;
@@ -131,21 +135,25 @@ const DB = {
 
   async update(tableName, id, rowData) {
     const supabaseTable = `wisbe_${tableName}`;
+    let updatedRow = null;
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient.from(supabaseTable).update(rowData).eq('id', id).select();
-        if (!error && data) return data[0];
-        console.warn(`Supabase update error on ${supabaseTable}, using local storage fallback:`, error);
+        if (!error && data && data.length > 0) {
+          updatedRow = data[0];
+        } else {
+          console.warn(`Supabase update error on ${supabaseTable}:`, error);
+        }
       } catch (err) {
         console.warn(`Supabase connection failed for update ${supabaseTable}:`, err);
       }
     }
 
-    // LocalStorage Fallback
+    // Always sync with LocalStorage
     const localData = JSON.parse(localStorage.getItem(`wisbe_local_${tableName}`) || "[]");
     const index = localData.findIndex(r => r.id === parseInt(id));
     if (index !== -1) {
-      localData[index] = { ...localData[index], ...rowData };
+      localData[index] = { ...localData[index], ...rowData, ...(updatedRow || {}) };
       localStorage.setItem(`wisbe_local_${tableName}`, JSON.stringify(localData));
       return localData[index];
     }
@@ -157,14 +165,15 @@ const DB = {
     if (supabaseClient) {
       try {
         const { error } = await supabaseClient.from(supabaseTable).delete().eq('id', id);
-        if (!error) return true;
-        console.warn(`Supabase delete error on ${supabaseTable}, using local storage fallback:`, error);
+        if (error) {
+          console.warn(`Supabase delete error on ${supabaseTable}:`, error);
+        }
       } catch (err) {
         console.warn(`Supabase connection failed for delete ${supabaseTable}:`, err);
       }
     }
 
-    // LocalStorage Fallback
+    // Always sync with LocalStorage
     const localData = JSON.parse(localStorage.getItem(`wisbe_local_${tableName}`) || "[]");
     const filtered = localData.filter(r => r.id !== parseInt(id));
     localStorage.setItem(`wisbe_local_${tableName}`, JSON.stringify(filtered));
